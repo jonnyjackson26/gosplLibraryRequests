@@ -27,12 +27,12 @@ books = [
 ]
 
 languages=[
+    {"code":"por","full-eng-title":"portugese"},
+    {"code":"ita","full-eng-title":"italian"},
     {"code":"deu","full-eng-title":"german"},
     {"code":"eng","full-eng-title":"english"},
     {"code":"spa","full-eng-title":"spanish"},
     {"code":"fra","full-eng-title":"french"},
-    {"code":"por","full-eng-title":"portugese"},
-    {"code":"ita","full-eng-title":"italian"},
 ]
 
 
@@ -63,7 +63,7 @@ def getData(language,book,chapter):
         # Split the text into a list of verses based on the verse number pattern, and remove the numbers
         verses = re.split('\d+ ', cleaned_string)
         
-        pattern = r"(Chapter|Capítulo|Kapitel|Chapitre) \d+"
+        pattern = r"(Chapter|Capítulo|Kapitel|Chapitre|Capitolo) \d+"
         verses[0] = re.sub(pattern, "", verses[0])
         #verses[0] has a chapter desciption but it also contains book description and other stuff. this removes "Chapter X" thats also includded
 

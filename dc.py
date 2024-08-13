@@ -5,7 +5,7 @@ import time
 import json
 
 languages=[
-    {"code":"eng","full-eng-title":"english"},
+    #{"code":"eng","full-eng-title":"english"},
     {"code":"spa","full-eng-title":"spanish"},
     {"code":"fra","full-eng-title":"french"},
     {"code":"por","full-eng-title":"portugese"},
@@ -109,9 +109,8 @@ def getOD(language):
 
 def main():
     start_time = time.time()
-    #for language in languages:
-    #    writeDC(language)
-    writeDC(languages[0])
+    for language in languages:
+        writeDC(language)
     end_time = time.time()
     print("Script execution time:", end_time - start_time, "seconds")
 

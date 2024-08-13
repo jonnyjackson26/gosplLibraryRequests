@@ -5,7 +5,7 @@ import time
 import json
 
 languages=[
-    #{"code":"eng","full-eng-title":"english"},
+    {"code":"eng","full-eng-title":"english"},
     {"code":"spa","full-eng-title":"spanish"},
     {"code":"fra","full-eng-title":"french"},
     {"code":"por","full-eng-title":"portugese"},
@@ -28,17 +28,15 @@ def getData(language,section):
     if response.status_code == 200:
         json_data = response.json()["content"]["body"].split("</div>", 1)[0]
 
-        #remove page breaks, sometimes it gives u weird page break
-        cleaned_string = re.sub('<span\s+class="page-break"\s+data-page="\d+"></span>\n', '', json_data)
-        # Remove footnotes (single letters between close and open angle brackets)
-        cleaned_string = re.sub('>[a-z]<', '><', cleaned_string)
-        # Remove everything between < and >
-        cleaned_string = re.sub('<[^>]+>', '', cleaned_string)
-        
-        # Split the text into a list of verses based on the verse number pattern, and remove the numbers
-        verses = re.split('\d+ ', cleaned_string)
+        # Step 1: Remove page breaks
+        cleaned_string = re.sub(r'<span\s+class="page-break"\s+data-page="\d+"></span>\n', '', json_data)
+        # Step 2: Split the text by the verse number pattern
+        verses = re.split(r'<span class="verse-number">\d+ </span>', cleaned_string)
+        # Step 3: Remove footnotes (single letters between close and open angle brackets)
+        verses = [re.sub(r'>[a-z]<', '><', verse) for verse in verses]
+        # Step 4: Remove everything between and including < and >
+        verses = [re.sub(r'<[^>]+>', '', verse) for verse in verses]
 
-        print(verses[0])
 
         #section 1's verse[0] starts with "Doctrine and Covenants\n". So I need to do a differnt case on the first one
         adjusterForFirstTimeThru=0
@@ -48,7 +46,17 @@ def getData(language,section):
         verses[0]=sectionIntro
 
         verses[-1] = verses[-1][:-1] #remove the last new line so my txt file doesnt have an extra newline at the end
-        writeLinesToFile(verses,"dc/dc-"+language["full-eng-title"]+"/"+str(section)+".txt")
+        
+        #section breakdown
+        pattern = r'<p class="study-summary".*?>(.*?)</p>'
+        match = re.search(pattern, response.json()["content"]["body"], re.DOTALL)
+        if match:
+            summary_html = match.group(1)
+            # Remove HTML tags from the content
+            summary_text = re.sub(r'<.*?>', '', summary_html)
+            verses.insert(1,f"{summary_text}\n")
+            
+        writeLinesToFile(verses,"dc2/dc-"+language["full-eng-title"]+"/"+str(section)+".txt")
 
     else:
         print("error in getting url")
@@ -61,13 +69,8 @@ def main():
     start_time = time.time()
     #for language in languages:
     #    writeDC(language)
-    getData(languages[0],"1")
-    getData(languages[0],"2")
-    getData(languages[0],"3")
-    getData(languages[0],"4")
-    getData(languages[0],"5")
-    getData(languages[0],"6")
-    getData(languages[0],"7")
+    for i in range(1,16):
+        getData(languages[0],f"{i}")
     end_time = time.time()
     print("Script execution time:", end_time - start_time, "seconds")
 

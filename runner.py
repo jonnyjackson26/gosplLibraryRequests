@@ -63,14 +63,15 @@ def getData(language,book,chapter):
         # Split the text into a list of verses based on the verse number pattern, and remove the numbers
         verses = re.split('\d+ ', cleaned_string)
         
+        #these two lines remove "Chapter 7" or "Chapitre 2" in all lines. Its important that I do it in all lines and not just the first because alma 7 for example has "Chapter 7" like 3 lines down
         pattern = r"(Chapter|Capítulo|Kapitel|Chapitre|Capitolo) \d+"
-        verses[0] = re.sub(pattern, "", verses[0])
+        verses = [re.sub(pattern, "", verse) for verse in verses]
         #verses[0] has a chapter desciption but it also contains book description and other stuff. this removes "Chapter X" thats also includded
 
         #verses=verses[1:] #get rid of chapter description
         #verses[0]=verses[0].split("\n")[2]+"\n" #this line of code sometimes shows the chapter description, sometimes not
 
-        writeLinesToFile(verses,"bom2/bom-"+language["full-eng-title"]+"/"+book["title"]+"/"+chapter+".txt")
+        writeLinesToFile(verses,"bom3/bom-"+language["full-eng-title"]+"/"+book["title"]+"/"+chapter+".txt")
     else:
         print("Failed to retrieve data. Status code:", response.status_code)
 

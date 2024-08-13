@@ -21,8 +21,8 @@ def writeLinesToFile(lines, path):
             file.writelines(line for line in lines)
 
 def getData(language,section):
+    print(f"getting section {section} in {language}")
     url = f"https://www.churchofjesuschrist.org/study/api/v3/language-pages/type/content?lang={language['code']}&uri=/scriptures/dc-testament/dc/{section}"
-    print(url)
 
     response = requests.get(url)
     if response.status_code == 200:
@@ -62,15 +62,56 @@ def getData(language,section):
         print("error in getting url")
 
 def writeDC(language):
+    getIntro(language)
     for i in range(1,numOfSectionsInDC+1):
         getData(language,str(i))
+    getOD(language)
+
+def getIntro(language):
+    url = f"https://www.churchofjesuschrist.org/study/api/v3/language-pages/type/content?lang={language['code']}&uri=/scriptures/dc-testament/introduction"
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        json_data = response.json()["content"]["body"].split("</div>", 1)[0]
+
+        # Step 1: Remove page breaks
+        cleaned_string = re.sub(r'<span\s+class="page-break"\s+data-page="\d+"></span>\n', '', json_data)
+        # Step 2: Split the text by the verse number pattern
+        verses = re.split(r'<span class="verse-number">\d+ </span>', cleaned_string)
+        # Step 3: Remove footnotes (single letters between close and open angle brackets)
+        verses = [re.sub(r'>[a-z]<', '><', verse) for verse in verses]
+        # Step 4: Remove everything between and including < and >
+        verses = [re.sub(r'<[^>]+>', '', verse) for verse in verses]
+        writeLinesToFile(verses,"dc2/dc-"+language["full-eng-title"]+"/0.txt")
+    else:
+        print("error in getting url")
+
+def getOD(language):
+    for i in range(1,3):
+        url = f"https://www.churchofjesuschrist.org/study/api/v3/language-pages/type/content?lang={language['code']}&uri=/scriptures/dc-testament/od/{i}"
+
+        response = requests.get(url)
+        if response.status_code == 200:
+            json_data = response.json()["content"]["body"]
+
+            # Step 1: Remove page breaks
+            cleaned_string = re.sub(r'<span\s+class="page-break"\s+data-page="\d+"></span>\n', '', json_data)
+            # Step 2: Split the text by the verse number pattern
+            verses = re.split(r'<span class="verse-number">\d+ </span>', cleaned_string)
+            # Step 3: Remove footnotes (single letters between close and open angle brackets)
+            verses = [re.sub(r'>[a-z]<', '><', verse) for verse in verses]
+            # Step 4: Remove everything between and including < and >
+            verses = [re.sub(r'<[^>]+>', '', verse) for verse in verses]
+            writeLinesToFile(verses,"dc2/dc-"+language["full-eng-title"]+"/od"+str(i)+".txt")
+        else:
+            print("error in getting url")
+
 
 def main():
     start_time = time.time()
     #for language in languages:
     #    writeDC(language)
-    for i in range(1,16):
-        getData(languages[0],f"{i}")
+    writeDC(languages[0])
     end_time = time.time()
     print("Script execution time:", end_time - start_time, "seconds")
 

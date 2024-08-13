@@ -82,6 +82,9 @@ def getIntro(language):
         verses = [re.sub(r'>[a-z]<', '><', verse) for verse in verses]
         # Step 4: Remove everything between and including < and >
         verses = [re.sub(r'<[^>]+>', '', verse) for verse in verses]
+        #there is &amp; in it, remove it
+        verses = [re.sub(r'&amp;', '&', verse) for verse in verses]
+
         writeLinesToFile(verses,"dc2/dc-"+language["full-eng-title"]+"/0.txt")
     else:
         print("error in getting url")
